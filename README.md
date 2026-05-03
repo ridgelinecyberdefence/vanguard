@@ -19,7 +19,7 @@ Most IR workflows require juggling dozens of separate tools, remembering command
 ## Capabilities
 
 ### Velociraptor Operations
-Full Velociraptor lifecycle management from a single menu: server initialisation with auto-generated certificates, client package creation, agent deployment via WinRM/SSH/PSExec, offline collector generation, collection import, hunt management, and web UI access. Passwords are generated with `crypto/rand` and never written to logs or config files.
+Full Velociraptor lifecycle management from a single menu: server initialisation with auto-generated certificates, client package creation, agent deployment via WinRM/SSH/PSExec, offline collector generation, collection import, hunt management, and web UI access. Passwords are generated securely and never written to logs or config files.
 
 ### Quick Triage
 Rapid artifact collection using native OS commands — no external tools required. Collects 20+ Windows artifact categories (processes, services, event logs, scheduled tasks, browser history, registry hives, DNS cache, network connections) and 15+ Linux categories (processes, cron, systemd, SSH config, auth logs, kernel modules). Each artifact is hashed and registered as case evidence automatically.
@@ -34,7 +34,7 @@ Capture memory with DumpIt, WinPMEM (Windows), AVML, or LiME (Linux) — locally
 Windows: KAPE target-based collection and EZ Tools parsing (MFTECmd, EvtxECmd, PECmd, RECmd). Linux: UAC profile-based collection, native log/config harvesting, and targeted file copy with per-file SHA256 verification.
 
 ### Remote Operations
-Execute triage, hunting, and memory capture across multiple remote endpoints simultaneously. Supports WinRM (NTLM authentication), SSH (key and password), and PSExec with bounded concurrent execution. Credentials are stored as `[]byte` and zeroed on connection close.
+Execute triage, hunting, and memory capture across multiple remote endpoints simultaneously. Supports WinRM (NTLM authentication), SSH (key and password), and PSExec with bounded concurrent execution. Credentials used for remote connections are handled securely and never written to disk or logs.
 
 ### Analysis & Reporting
 Generate self-contained HTML incident reports with embedded CSS (no external dependencies — works air-gapped). Build super-timelines by merging all parsed artifacts into chronologically sorted CSV. Correlate findings into 30-minute host clusters with automatic MITRE ATT&CK technique extraction.
@@ -166,20 +166,15 @@ VanGuard is designed for environments with no internet access:
 3. Run directly from USB on the air-gapped target — all tools and rules are self-contained
 4. For rule updates: create an offline bundle (Update → Create Offline Bundle), transfer via USB, apply on the air-gapped system with SHA256 verification
 
-## Security
+## Security & Evidence Handling
 
-VanGuard underwent a comprehensive security audit (80 checks across 10 categories) with 26 findings addressed:
+VanGuard is built for environments where evidence integrity and operational security matter:
 
-- **All SQL parameterised** — zero string-interpolated queries
-- **All archive extraction zip-slip safe** — separator-inclusive path traversal guards
-- **All user inputs validated** — hostname, IP, port, username checked before use in commands
-- **Credentials never logged** — 14 regex sanitisation patterns
-- **Credentials never in CLI args** — Velociraptor passwords via stdin
-- **Password memory zeroed** — `[]byte` with explicit zeroing on connection close
-- **Downloads HTTPS-only** — scheme enforcement + GitHub domain validation
-- **HTML reports XSS-safe** — `html/template` auto-escaping
-- **Config files 0o600** — owner-only read/write
-- **Output directories 0o700** — owner-only access
+- **Tamper-evident audit trail** — every action on evidence is cryptographically logged, giving you a defensible chain of custody for legal proceedings
+- **Automatic evidence hashing** — every collected artifact is dual-hashed (MD5 + SHA256) at capture time, so you can prove evidence hasn't been modified
+- **Append-only custody chain** — evidence handling events are recorded and cannot be retroactively altered
+- **Credential isolation** — passwords and keys used for remote connections are never written to disk or logs, protecting your operational credentials during IR
+- **Self-contained reports** — HTML reports work without internet access, with no external dependencies that could leak investigation details
 
 ## Documentation
 
