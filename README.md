@@ -1,6 +1,6 @@
 # VanGuard — Enterprise Incident Response Toolkit
 
-> Cross-platform DFIR toolkit for enterprise incident response. Velociraptor-native, air-gap compatible, USB-portable.
+> Cross-platform DFIR toolkit for enterprise incident response. Velociraptor-native, air-gap compatible, portable — no installation required.
 
 VanGuard is a self-contained incident response toolkit built in Go that gives DFIR teams a single binary for triage, threat hunting, memory forensics, disk collection, remote operations, and Velociraptor management — on both Windows and Linux, with or without network access.
 
@@ -9,7 +9,7 @@ VanGuard is a self-contained incident response toolkit built in Go that gives DF
 Most IR workflows require juggling dozens of separate tools, remembering command-line flags, and manually tracking evidence. VanGuard consolidates the full IR lifecycle into one portable binary with built-in case management, evidence hashing, chain of custody, and professional HTML reporting.
 
 **Key differentiators:**
-- **Single binary, zero install** — runs from USB with no dependencies
+- **Single binary, zero install** — runs from any directory with no installation required
 - **Velociraptor as a first-class citizen** — full server lifecycle, agent deployment, offline collectors, and VQL queries from one interface
 - **28 pre-built IR use cases** — ransomware, BEC, lateral movement, credential theft, rootkit detection, and more — each with MITRE ATT&CK mapping and phased artifact collection
 - **Air-gapped by design** — every feature works offline; online capabilities are enhancements, not requirements

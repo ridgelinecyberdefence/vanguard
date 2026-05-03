@@ -2,7 +2,7 @@
 
 ## Overview
 
-VanGuard is an enterprise DFIR (Digital Forensics and Incident Response) toolkit that runs as a single binary on Windows and Linux. It provides a unified interface for Velociraptor-based IR operations, triage collection, threat hunting, memory forensics, disk artifact analysis, and remote operations — all from a self-contained, USB-portable deployment.
+VanGuard is an enterprise DFIR (Digital Forensics and Incident Response) toolkit that runs as a single binary on Windows and Linux. It provides a unified interface for Velociraptor-based IR operations, triage collection, threat hunting, memory forensics, disk artifact analysis, and remote operations — all from a self-contained, portable deployment.
 
 VanGuard operates in two interface modes: a keyboard-driven TUI for terminal and SSH sessions, and a web UI accessible via browser.
 
@@ -15,7 +15,7 @@ VanGuard detects privilege level at startup and warns if running without elevati
 ## First Run
 
 1. Download the binary from [GitHub Releases](https://github.com/ridgelinecyberdefence/vanguard/releases) or build from source
-2. Place it in a directory where VanGuard can create its subdirectories (USB drive or local folder)
+2. Place it in any directory where VanGuard can create its subdirectories — a local folder, a USB drive, or a network share
 3. Launch: `vanguard.exe` (Windows) or `sudo ./vanguard` (Linux)
 4. On first run, VanGuard creates the directory structure and a default `config/vanguard.yaml`
 5. Navigate to **Configuration** to set your analyst name, organisation, and download tools
@@ -127,7 +127,7 @@ Pushes the repacked client to a remote endpoint via one of three methods:
 
 ### Create Offline Collector
 
-Generates a self-contained collector executable that can be run on a target without network connectivity. The collector gathers artifacts and produces a ZIP file that can be transferred back to the analyst via USB and imported into VanGuard.
+Generates a self-contained collector executable that can be run on a target without network connectivity. The collector gathers artifacts and produces a ZIP file that can be transferred back to the analyst — via USB, network share, or other means — and imported into VanGuard.
 
 ### Import Offline Collection
 
