@@ -1,214 +1,195 @@
-# VANGUARD — Enterprise DFIR Toolkit
+# VanGuard — Enterprise Incident Response Toolkit
 
-> Cross-platform incident response toolkit for connected, isolated, and air-gapped environments.
+> Cross-platform DFIR toolkit for enterprise incident response. Velociraptor-native, air-gap compatible, USB-portable.
 
-**VanGuard** is a self-contained DFIR toolkit built by [RidgeLine Cyber](https://ridgelinecyber.com) for enterprise incident response operations. It provides a modern terminal interface wrapping industry-standard forensic tools into guided investigation workflows.
+VanGuard is a self-contained incident response toolkit built in Go that gives DFIR teams a single binary for triage, threat hunting, memory forensics, disk collection, remote operations, and Velociraptor management — on both Windows and Linux, with or without network access.
 
-## Features
+## Why VanGuard
 
-- **Velociraptor Integration** — Server deployment, agent management, offline collectors, and hunt management
-- **Quick Triage** — Comprehensive system collection using native OS commands (no tools required)
-- **Threat Hunting** — Hayabusa, Chainsaw, Loki, YARA scanning, and live anomaly detection
-- **Memory Forensics** — Capture with DumpIt / WinPmem / AVML / Belkasoft / Magnet RAM and analyze with Volatility3
-- **Disk Collection** — KAPE artifact collection and EZ Tools parsing pipeline
-- **Remote Operations** — Collect from remote endpoints via WinRM, SSH, or PSExec
-- **28 Investigation Use Cases** — Pre-built workflows for ransomware, BEC, lateral movement, web compromise, and more
-- **Case Management** — SQLite-backed case tracking with evidence chain and findings
-- **MITRE ATT&CK Mapping** — Automatic technique mapping and correlation
-- **HTML Reports** — Professional investigation reports with embedded CSS/JS
-- **Air-Gapped Support** — Works entirely offline; update via signed USB bundles
+Most IR workflows require juggling dozens of separate tools, remembering command-line flags, and manually tracking evidence. VanGuard consolidates the full IR lifecycle into one portable binary with built-in case management, evidence hashing, chain of custody, and professional HTML reporting.
 
-## Quick Start
+**Key differentiators:**
+- **Single binary, zero install** — runs from USB with no dependencies
+- **Velociraptor as a first-class citizen** — full server lifecycle, agent deployment, offline collectors, and VQL queries from one interface
+- **28 pre-built IR use cases** — ransomware, BEC, lateral movement, credential theft, rootkit detection, and more — each with MITRE ATT&CK mapping and phased artifact collection
+- **Air-gapped by design** — every feature works offline; online capabilities are enhancements, not requirements
+- **Dual interface** — keyboard-driven TUI for terminal/SSH sessions, plus a web UI for browser-based workflows
+- **Evidence integrity built in** — dual MD5+SHA256 hashing, append-only chain of custody, HMAC-SHA256 tamper-evident audit logging
 
-### Download
+## Capabilities
 
-Download the latest release from [Releases](https://github.com/ridgelinecyberdefence/vanguard/releases):
+### Velociraptor Operations
+Full Velociraptor lifecycle management from a single menu: server initialisation with auto-generated certificates, client package creation, agent deployment via WinRM/SSH/PSExec, offline collector generation, collection import, hunt management, and web UI access. Passwords are generated with `crypto/rand` and never written to logs or config files.
 
-- `vanguard-windows-amd64.exe` — Windows
-- `vanguard-linux-amd64` — Linux
+### Quick Triage
+Rapid artifact collection using native OS commands — no external tools required. Collects 20+ Windows artifact categories (processes, services, event logs, scheduled tasks, browser history, registry hives, DNS cache, network connections) and 15+ Linux categories (processes, cron, systemd, SSH config, auth logs, kernel modules). Each artifact is hashed and registered as case evidence automatically.
 
-### Run
+### Threat Hunting & Scanning
+Integrates Hayabusa (Sigma-based event log analysis), Chainsaw (event log hunting), Loki (IOC scanning), and YARA (custom rule scanning). Live hunting analyses running system state for LOLBin execution, suspicious autoruns, named pipe anomalies, DLL hijacking indicators, rogue systemd units, SUID binaries, and C2 network patterns — all without external tools.
 
-Place the binary anywhere — VanGuard creates its directory tree (`bin/`, `config/`, `logs/`, `output/`, `rules/`, `usecases/`) on first launch alongside the executable.
+### Memory Forensics
+Capture memory with DumpIt, WinPMEM (Windows), AVML, or LiME (Linux) — locally or on remote targets via WinRM/SSH. Analyse dumps with Volatility3 across multiple plugin categories: process analysis, network connections, malware detection, registry extraction, timeline generation, and YARA scanning. Remote capture uses randomised temp paths to prevent pre-placement attacks.
 
-```sh
+### Disk Artifact Collection
+Windows: KAPE target-based collection and EZ Tools parsing (MFTECmd, EvtxECmd, PECmd, RECmd). Linux: UAC profile-based collection, native log/config harvesting, and targeted file copy with per-file SHA256 verification.
+
+### Remote Operations
+Execute triage, hunting, and memory capture across multiple remote endpoints simultaneously. Supports WinRM (NTLM authentication), SSH (key and password), and PSExec with bounded concurrent execution. Credentials are stored as `[]byte` and zeroed on connection close.
+
+### Analysis & Reporting
+Generate self-contained HTML incident reports with embedded CSS (no external dependencies — works air-gapped). Build super-timelines by merging all parsed artifacts into chronologically sorted CSV. Correlate findings into 30-minute host clusters with automatic MITRE ATT&CK technique extraction.
+
+### Use Cases Library (28 pre-built workflows)
+
+**Windows (13):**
+
+| ID | Use Case | Severity |
+|----|----------|----------|
+| UC-WIN-001 | Ransomware Investigation | Critical |
+| UC-WIN-002 | Business Email Compromise | High |
+| UC-WIN-003 | Lateral Movement Detection | High |
+| UC-WIN-004 | Persistence Discovery | High |
+| UC-WIN-005 | Credential Theft | Critical |
+| UC-WIN-006 | Data Exfiltration | High |
+| UC-WIN-007 | Insider Threat | High |
+| UC-WIN-008 | PowerShell Attacks | High |
+| UC-WIN-009 | LOLBins Investigation | Medium |
+| UC-WIN-010 | Initial Access | High |
+| UC-WIN-011 | Full System Triage | Medium |
+| UC-WIN-012 | Timeline Analysis | Medium |
+| UC-WIN-013 | Active Directory Attacks (DCSync, Kerberoasting) | Critical |
+
+**Linux (12):**
+
+| ID | Use Case | Severity |
+|----|----------|----------|
+| UC-LNX-001 | Web Server Compromise | Critical |
+| UC-LNX-002 | SSH Brute Force | High |
+| UC-LNX-003 | Cryptominer Detection | High |
+| UC-LNX-004 | Container Escape | Critical |
+| UC-LNX-005 | Rootkit Detection | Critical |
+| UC-LNX-006 | Persistence Discovery | High |
+| UC-LNX-007 | Privilege Escalation | High |
+| UC-LNX-008 | Log Tampering | High |
+| UC-LNX-009 | Cloud Credential Exposure | Critical |
+| UC-LNX-010 | Full Linux Triage | Medium |
+| UC-LNX-011 | Network Intrusion | High |
+| UC-LNX-012 | Supply Chain Compromise | Critical |
+
+**Cross-Platform (3):** IOC Sweep, YARA Hunt, Baseline Comparison
+
+Each use case defines phased Velociraptor artifact collection with MITRE ATT&CK mapping, estimated completion time, and severity classification. Customise by editing YAML files in `usecases/`.
+
+### Update System
+Online: automatic checks for Sigma, YARA, and Hayabusa rule updates plus tool binary updates via GitHub releases API. Offline: create update bundles as ZIP files with SHA256-verified manifests for air-gapped transfer and application.
+
+### Case Management & Evidence Integrity
+SQLite-backed case database tracking cases, targets, evidence, findings, and timeline events. Every collected artifact is dual-hashed (MD5+SHA256) at collection time with an append-only chain of custody record. HMAC-SHA256 tamper-evident audit logging provides cryptographic proof of evidence handling.
+
+## Integrated Tools
+
+| Tool | Purpose | Platform |
+|------|---------|----------|
+| [Velociraptor](https://github.com/Velocidex/velociraptor) | Primary IR platform — server, agents, VQL, hunts | Windows, Linux |
+| [Hayabusa](https://github.com/Yamato-Security/hayabusa) | Windows event log analysis (Sigma rules) | Windows, Linux |
+| [Chainsaw](https://github.com/WithSecureLabs/chainsaw) | Event log hunting | Windows, Linux |
+| [Loki](https://github.com/Neo23x0/Loki) | IOC scanner (YARA + hashes) | Windows, Linux |
+| [KAPE](https://www.kroll.com/en/services/cyber-risk/incident-response-litigation-support/kroll-artifact-parser-extractor-kape) | Disk triage collection | Windows |
+| [EZ Tools](https://ericzimmerman.github.io/) | Forensic parsers (MFT, EVTX, Prefetch, Registry) | Windows |
+| [UAC](https://github.com/tclahr/uac) | Unix Artifacts Collector | Linux |
+| [DumpIt](https://www.comae.com/) | Memory capture | Windows |
+| [WinPMEM](https://github.com/Velocidex/WinPmem) | Memory capture | Windows |
+| [AVML](https://github.com/microsoft/avml) | Memory capture | Linux |
+| [Volatility3](https://github.com/volatilityfoundation/volatility3) | Memory analysis framework | Windows, Linux |
+
+All tools are downloaded at runtime from GitHub releases. Downloads are HTTPS-only with domain validation.
+
+## Installation
+
+### Pre-built Binaries
+
+Download from [GitHub Releases](https://github.com/ridgelinecyberdefence/vanguard/releases):
+
+| Platform | Binary | Checksum |
+|----------|--------|----------|
+| Windows 64-bit | `vanguard-windows-amd64.exe` | `vanguard-checksums.sha256` |
+| Linux 64-bit | `vanguard-linux-amd64` | `vanguard-checksums.sha256` |
+
+```bash
 # Linux
 chmod +x vanguard-linux-amd64
-./vanguard-linux-amd64
+sudo ./vanguard-linux-amd64
 ```
 
 ```powershell
-# Windows
+# Windows (run as Administrator)
 .\vanguard-windows-amd64.exe
 ```
 
-The TUI opens immediately. From the dashboard:
+### Build from Source
 
-1. Press `8` to open **Configuration** and create a case (`Create New Case`)
-2. Press `8` → `6` to **Download Required Tools** (Velociraptor, Hayabusa, Chainsaw, Loki, WinPmem, rule sets)
-3. Press `H` for in-app help — the **Quick Start Guide** walks through your first investigation
+Requires Go 1.22+ and GCC (CGO is required for SQLite).
 
-## Sidebar Navigation
-
-| Key | Module |
-|-----|--------|
-| `1` | Velociraptor (server, clients, offline collectors, hunts) |
-| `2` | Disk Collection (KAPE, EZ Tools, UAC) |
-| `3` | Threat Hunting (Hayabusa, Chainsaw, Loki, YARA, live detection) |
-| `4` | Quick Triage (native-OS evidence collection) |
-| `5` | Memory Forensics (capture + Volatility3) |
-| `6` | Remote Operations (WinRM, SSH, PSExec, batch ops) |
-| `7` | Analysis & Reporting (parsers, super-timeline, MITRE, HTML reports) |
-| `8` | Configuration (cases, tools, settings) |
-| `U` | Update Tools & Rules (online + air-gapped bundles) |
-| `C` | Use Cases Library (28 pre-built investigation workflows) |
-| `H` | Help & Documentation |
-| `Q` | Quit |
-
-## Use Cases
-
-VanGuard ships with 28 pre-built investigation workflows under `[C] Use Cases`:
-
-- **Windows (13)** — Ransomware, BEC, Lateral Movement, Persistence, Credential Theft, Data Exfiltration, Insider Threat, PowerShell Attacks, LOLBins, Initial Access, Full System Triage, Timeline Analysis, Active Directory Attacks
-- **Linux (12)** — Web Server Compromise, SSH Brute Force, Cryptominer, Container Escape, Rootkit, Persistence, Privilege Escalation, Log Tampering, Cloud Credential Theft, Full Triage, Network Intrusion, Supply Chain Compromise
-- **Cross-Platform (3)** — IOC Sweep, YARA Hunt, Baseline Comparison
-
-Each use case is a structured YAML workflow (`internal/usecases/defaults_*.go` for built-ins; drop your own `UC-CUSTOM-*.yaml` into `usecases/` for custom playbooks). Run produces a per-phase summary with analysis guidance and recommended follow-ups.
-
-## Air-Gapped Operation
-
-VanGuard is designed offline-first. Once tool binaries and rule sets are placed (or applied via update bundle), the entire toolkit runs without internet access.
-
-- **Create a bundle** on a connected machine: `[U] Update → [8] Create Offline Update Bundle` produces `vanguard_updates_YYYYMMDD/` with manifest.json + SHA256 hashes
-- **Apply the bundle** on the air-gapped host: `[U] Update → [9] Apply Offline Update Bundle` validates each component's hash before swapping it in
-- All operator-installed YARA rules under `rules/yara/custom/` are preserved across rule updates
-
-## Building from Source
-
-VanGuard requires Go 1.22+ and a C toolchain (CGO is enabled for SQLite case storage).
-
-### Linux
-
-```sh
-sudo apt-get install -y build-essential   # or your distro equivalent
-git clone https://github.com/ridgelinecyberdefence/vanguard
+```bash
+git clone https://github.com/ridgelinecyberdefence/vanguard.git
 cd vanguard
-
-VERSION=1.0.0
-DATE=$(date -u +%Y-%m-%d)
-COMMIT=$(git rev-parse --short HEAD)
-CGO_ENABLED=1 go build \
-  -ldflags "-X main.version=$VERSION -X main.buildDate=$DATE -X main.commit=$COMMIT" \
-  -o vanguard ./cmd/vanguard/
+CGO_ENABLED=1 go build -trimpath -o vanguard ./cmd/vanguard/
 ```
 
-### Windows (PowerShell)
-
+Windows (PowerShell):
 ```powershell
-choco install mingw -y                    # or any other GCC for Windows
-git clone https://github.com/ridgelinecyberdefence/vanguard
-cd vanguard
-
-$version = "1.0.0"
-$date = Get-Date -Format "yyyy-MM-dd"
-$commit = git rev-parse --short HEAD
-$env:CGO_ENABLED = 1
-go build `
-  -ldflags "-X main.version=$version -X main.buildDate=$date -X main.commit=$commit" `
-  -o vanguard.exe ./cmd/vanguard/
+.\build.ps1
 ```
 
-### Continuous Integration
+## Quick Start
 
-Pushes to `main` and PRs build + test on Linux and Windows via [`.github/workflows/build.yml`](.github/workflows/build.yml). Tagged commits (`v*`) produce signed release artifacts via [`.github/workflows/release.yml`](.github/workflows/release.yml).
+1. **Launch** VanGuard as Administrator/root
+2. **Create a case** — Configuration → Case Management → New Case
+3. **Set analyst name** — Configuration → Settings
+4. **Download tools** — Configuration → Tool Management
+5. **Run triage** — Quick Triage → Local Quick Triage
+6. **Hunt for threats** — Threat Hunting → select Hayabusa, Loki, or YARA
+7. **Generate report** — Analysis & Reporting → Generate Report
 
-## Repository Layout
+For Velociraptor-based workflows:
+1. **Initialize server** — Velociraptor Operations → Initialize Server
+2. **Deploy agents** — Velociraptor Operations → Deploy Agent (WinRM/SSH/PSExec)
+3. **Run use case** — Use Cases Library → select a pre-built workflow
+4. **Collect and analyse** — results are automatically registered as case evidence
 
-```
-cmd/vanguard/        Entry point + ldflags-injected version
-internal/
-  analysis/          Log/event parsing, super-timeline, correlation, MITRE mapping, HTML report
-  case/              SQLite case + finding + evidence storage
-  config/            YAML config loader
-  disk/              KAPE + EZ Tools + UAC + native-Linux artifact collection
-  help/              In-app documentation content
-  hunting/           Threat hunting orchestration + live detectors
-  logging/           Structured file + stderr logger
-  memory/            Capture + Volatility3 analysis
-  mitre/             MITRE ATT&CK technique catalog
-  modules/           PowerShell / Bash module orchestration helpers
-  network/           SSH / WinRM / PSExec wrappers
-  output/            Output directory helpers
-  remote/            Remote operations engine + target/credential management
-  tools/             Tool registry + downloader + manual-install hints
-  triage/            Quick Triage steps (Windows + Linux)
-  tui/               bubbletea UI (sidebar + content panels)
-  updates/           Update orchestration + offline bundle create/apply
-  usecases/          28 pre-built workflows + runner + YAML loader
-  velociraptor/      Velociraptor server lifecycle + client packaging
-modules/             User-facing PowerShell / Bash modules
-rules/               Sigma / YARA / Hayabusa rule sets
-templates/           HTML report templates
-```
+## Air-Gapped Deployment
+
+VanGuard is designed for environments with no internet access:
+
+1. On a connected machine: download tools and rules via the Configuration and Update menus
+2. Copy the entire VanGuard directory to a USB drive
+3. Run directly from USB on the air-gapped target — all tools and rules are self-contained
+4. For rule updates: create an offline bundle (Update → Create Offline Bundle), transfer via USB, apply on the air-gapped system with SHA256 verification
+
+## Security
+
+VanGuard underwent a comprehensive security audit (80 checks across 10 categories) with 26 findings addressed:
+
+- **All SQL parameterised** — zero string-interpolated queries
+- **All archive extraction zip-slip safe** — separator-inclusive path traversal guards
+- **All user inputs validated** — hostname, IP, port, username checked before use in commands
+- **Credentials never logged** — 14 regex sanitisation patterns
+- **Credentials never in CLI args** — Velociraptor passwords via stdin
+- **Password memory zeroed** — `[]byte` with explicit zeroing on connection close
+- **Downloads HTTPS-only** — scheme enforcement + GitHub domain validation
+- **HTML reports XSS-safe** — `html/template` auto-escaping
+- **Config files 0o600** — owner-only read/write
+- **Output directories 0o700** — owner-only access
 
 ## Documentation
 
-Run VanGuard and press `H` for the full in-app guide (Quick Start, Keyboard Shortcuts, Walkthrough, Tool Reference, Use Case Reference, MITRE Reference, Output Directory Structure, Configuration Reference, About, Licenses, Changelog).
+| Document | Description |
+|----------|-------------|
+| [Installation Guide](docs/installation.md) | Download, build, and deploy |
+| [Quick Start](docs/quick-start.md) | First run and common workflows |
+| [User Guide](docs/user-guide.md) | Comprehensive reference for all modules |
+| [Air-Gapped Deployment](docs/air-gapped-deployment.md) | Offline setup and update bundles |
+| [Contributing](CONTRIBUTING.md) | Development setup and contribution guidelines |
+| [Changelog](CHANGELOG.md) | Version history and release notes |
 
-## Privilege Requirements
-
-| Requires Administrator / root | Works without elevation |
-|------------------------------|-------------------------|
-| Memory capture (DumpIt, WinPmem, AVML, LiME) | Case management |
-| Event log export (`wevtutil`) | Process listing |
-| Registry hive export (`reg save`) | Network connections (partial) |
-| Velociraptor server start | Threat hunting analysis on collected artifacts |
-| Agent deployment | Report generation |
-| Some Quick Triage collections | Tool management |
-
-Recommendation: run VanGuard as Administrator / root for full capability. Individual operations will warn before failing if elevation is required but not present.
-
-## Security Considerations
-
-- **Case database**: `output/vanguard.db` is an unencrypted SQLite file. Use full-disk encryption (BitLocker / LUKS) on the VanGuard drive when handling sensitive investigations.
-- **Credentials**: Remote-target passwords and Velociraptor admin secrets are held in memory for the session only — they are never persisted to disk.
-- **Logs**: `logs/vanguard.log` is sanitised on write to redact common credential patterns (`password=`, `Bearer …`, `-p VALUE`, etc.), but may still contain hostnames and IP addresses of investigated systems. Treat it as evidence.
-- **Evidence integrity**: Every evidence file is hashed (MD5 + SHA256) at collection. Run `[8] Configuration > [V] Verify Evidence Integrity` (and the auto-check fires before HTML report generation) to detect tampering or accidental modification.
-- **Tool downloads**: Downloads attempt to verify against published `.sha256` checksums; mismatches abort the install. The on-disk hash is recorded so subsequent scans flag binaries that have been altered (`MODIFIED` badge in Tool Status).
-- **Offline bundles**: `manifest.json` carries SHA256 for every component. `[U] Update > Apply Offline Bundle` performs a full preflight verification — a single mismatch rejects the entire bundle.
-- **Velociraptor**: Uses self-signed certificates generated locally. The GUI binds to `127.0.0.1` by default (frontend stays on `0.0.0.0` so clients can connect). Rotate certificates via `[1] Velociraptor > [R] Regenerate Certificates`.
-- **Remote transports**:
-  - **SSH** passes passwords via the `SSHPASS` environment variable (not argv).
-  - **WinRM** feeds the wrapper script via stdin (`-Command -`), so credentials never appear in argv.
-  - **PSExec** is a Sysinternals limitation — `-p PASSWORD` is on argv. Logs redact it; operators who can't tolerate process-listing exposure should use WinRM/SSH.
-
-## License
-
-VanGuard is released under the MIT License — see [LICENSE](LICENSE) for the full text.
-
-Bundled third-party tools retain their own licenses:
-
-| Tool | License |
-|------|---------|
-| Velociraptor | AGPL-3.0 |
-| Hayabusa | GPL-3.0 |
-| Chainsaw | GPL-3.0 |
-| Loki | GPL-3.0 |
-| EZ Tools | MIT |
-| AVML | MIT |
-| UAC | Apache-2.0 |
-| Volatility3 | Volatility Foundation License |
-| KAPE | Free for DFIR use |
-| DumpIt (Comae) | Free for DFIR use |
-| Belkasoft RAM Capturer | Freeware |
-| Magnet RAM Capture | Freeware |
-
-## Contributing
-
-VanGuard development happens at [github.com/ridgelinecyberdefence/vanguard](https://github.com/ridgelinecyberdefence/vanguard). Bug reports, feature requests, and pull requests welcome.
-
-For training and enterprise support: [training.ridgelinecyber.com](https://training.ridgelinecyber.com).
-
----
-
-Built by [RidgeLine Cyber](https://ridgelinecyber.com).
+## Project Structure
