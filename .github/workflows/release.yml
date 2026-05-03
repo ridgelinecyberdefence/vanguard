@@ -1,0 +1,138 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Build matrix — one job per target platform
+  # ---------------------------------------------------------------------------
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            goos: linux
+            goarch: amd64
+            artifact: vanguard-linux-amd64
+
+          - os: windows-latest
+            goos: windows
+            goarch: amd64
+            artifact: vanguard-windows-amd64.exe
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Read Go version from go.mod so the workflow stays in sync automatically.
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      # windows-latest ships MSYS2; add its MinGW-w64 gcc to PATH so CGO works.
+      - name: Add MinGW gcc to PATH (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          "C:\msys64\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      # Strip the leading "v" from the tag (v1.2.3 → 1.2.3).
+      - name: Resolve version, date, commit (Linux)
+        if: runner.os == 'Linux'
+        id: meta-linux
+        run: |
+          echo "version=${GITHUB_REF_NAME#v}"       >> "$GITHUB_OUTPUT"
+          echo "date=$(date -u +%Y-%m-%d)"           >> "$GITHUB_OUTPUT"
+          echo "commit=${GITHUB_SHA::7}"             >> "$GITHUB_OUTPUT"
+
+      - name: Resolve version, date, commit (Windows)
+        if: runner.os == 'Windows'
+        id: meta-windows
+        shell: pwsh
+        run: |
+          $tag    = $env:GITHUB_REF_NAME.TrimStart('v')
+          $date   = Get-Date -Format "yyyy-MM-dd"
+          $commit = $env:GITHUB_SHA.Substring(0, 7)
+          "version=$tag"    | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "date=$date"      | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "commit=$commit"  | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Build (Linux)
+        if: runner.os == 'Linux'
+        env:
+          CGO_ENABLED: "1"
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          go build -trimpath \
+            -ldflags "-s -w \
+              -X main.version=${{ steps.meta-linux.outputs.version }} \
+              -X main.buildDate=${{ steps.meta-linux.outputs.date }} \
+              -X main.commit=${{ steps.meta-linux.outputs.commit }}" \
+            -o ${{ matrix.artifact }} \
+            ./cmd/vanguard/
+
+      - name: Build (Windows)
+        if: runner.os == 'Windows'
+        env:
+          CGO_ENABLED: "1"
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        shell: pwsh
+        run: |
+          $version = "${{ steps.meta-windows.outputs.version }}"
+          $date    = "${{ steps.meta-windows.outputs.date }}"
+          $commit  = "${{ steps.meta-windows.outputs.commit }}"
+          go build -trimpath `
+            -ldflags "-s -w -X main.version=$version -X main.buildDate=$date -X main.commit=$commit" `
+            -o "${{ matrix.artifact }}" `
+            ./cmd/vanguard/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}
+          retention-days: 1
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------------
+  # Release job — runs after all matrix builds succeed
+  # ---------------------------------------------------------------------------
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          # Downloads each artifact into its own subdirectory by default;
+          # merge-multiple flattens them into a single directory.
+          merge-multiple: true
+          path: dist/
+
+      - name: Generate SHA256 checksums
+        working-directory: dist
+        run: |
+          sha256sum vanguard-linux-amd64 vanguard-windows-amd64.exe \
+            > vanguard-checksums.sha256
+          echo "--- checksums ---"
+          cat vanguard-checksums.sha256
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/vanguard-linux-amd64
+            dist/vanguard-windows-amd64.exe
+            dist/vanguard-checksums.sha256
+          fail_on_unmatched_files: true
+          generate_release_notes: true

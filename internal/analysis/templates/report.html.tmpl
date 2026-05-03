@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>VanGuard Investigation Report — {{.Case.ID}}</title>
+<style>
+  :root {
+    --bg: #0d2137;
+    --bg-card: #ffffff;
+    --bg-page: #f5f7fa;
+    --text: #1a1d23;
+    --text-muted: #5f6b7a;
+    --accent: #1565c0;
+    --accent-light: #4fc3f7;
+    --critical: #c62828;
+    --high: #ef5350;
+    --medium: #ffa726;
+    --low: #90a4ae;
+    --info: #66bb6a;
+    --border: #d8dee5;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+         background: var(--bg-page); color: var(--text); line-height: 1.5; }
+  header.brand { background: var(--bg); color: #e3f2fd; padding: 32px 40px; }
+  header.brand h1 { margin: 0; font-size: 24px; letter-spacing: 4px; color: var(--accent-light); }
+  header.brand .sub { color: #90a4ae; margin-top: 4px; font-size: 14px; }
+  main { max-width: 1100px; margin: 32px auto; padding: 0 24px; }
+  section { background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 8px; padding: 24px 28px; margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(15, 30, 50, 0.04); }
+  h2 { color: var(--accent); margin-top: 0; border-bottom: 2px solid var(--border);
+       padding-bottom: 8px; }
+  h3 { color: var(--text); margin-top: 24px; }
+  dl.meta { display: grid; grid-template-columns: max-content auto;
+            gap: 6px 16px; margin: 0; }
+  dl.meta dt { color: var(--text-muted); font-weight: 500; }
+  dl.meta dd { margin: 0; }
+  table { width: 100%; border-collapse: collapse; margin-top: 12px;
+          font-size: 14px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border);
+           vertical-align: top; }
+  th { background: #f0f3f7; cursor: pointer; user-select: none;
+       font-weight: 600; color: var(--text); position: sticky; top: 0; }
+  th:hover { background: #e6ebf2; }
+  tbody tr:nth-child(even) { background: #fafbfd; }
+  .sev { display: inline-block; padding: 2px 8px; border-radius: 12px;
+         font-size: 11px; font-weight: 600; text-transform: uppercase; }
+  .sev.critical { background: var(--critical); color: white; }
+  .sev.high     { background: var(--high); color: white; }
+  .sev.medium   { background: var(--medium); color: white; }
+  .sev.low      { background: var(--low); color: white; }
+  .sev.info     { background: var(--info); color: white; }
+  .mono { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 12px; }
+  .muted { color: var(--text-muted); }
+  .matrix { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px; margin-top: 16px; }
+  .matrix .col { background: #f0f3f7; border-radius: 6px; padding: 12px; }
+  .matrix h4 { margin: 0 0 8px; color: var(--accent); font-size: 13px;
+               text-transform: uppercase; letter-spacing: 1px; }
+  .matrix .tech { display: flex; justify-content: space-between; padding: 4px 0;
+                  border-bottom: 1px solid #d8dee5; font-size: 13px; }
+  .matrix .tech:last-child { border: none; }
+  .matrix .tech .id { color: var(--text-muted); font-family: monospace; }
+  footer { color: var(--text-muted); text-align: center; font-size: 12px;
+           padding: 24px; }
+  .pill { display: inline-block; background: #e3f2fd; color: var(--accent);
+          padding: 2px 10px; border-radius: 12px; font-size: 12px; margin-right: 6px; }
+</style>
+</head>
+<body>
+
+<header class="brand">
+  <h1>V A N G U A R D &nbsp; — &nbsp; Investigation Report</h1>
+  <div class="sub">RidgeLine Cyber DFIR Toolkit · VanGuard {{.Version}} · Generated {{.GeneratedAt}}</div>
+</header>
+
+<main>
+
+{{if .IntegrityWarning}}
+<section class="alert" style="background:#5a1a1a;border:1px solid #c0392b;color:#fff;padding:14px 18px;border-radius:4px;margin:0 0 22px 0">
+  <strong style="display:block;font-size:1.05em;margin-bottom:4px">⚠ EVIDENCE INTEGRITY WARNING</strong>
+  <span>{{.IntegrityWarning}}</span>
+</section>
+{{end}}
+
+<section>
+  <h2>Cover</h2>
+  <dl class="meta">
+    <dt>Case ID</dt>          <dd class="mono">{{.Case.ID}}</dd>
+    <dt>Case Name</dt>        <dd>{{.Case.Name}}</dd>
+    <dt>Classification</dt>   <dd>{{.Case.Classification}}</dd>
+    <dt>Analyst</dt>          <dd>{{.Case.Analyst}}</dd>
+    <dt>Organization</dt>     <dd>{{.Case.Organization}}</dd>
+    <dt>Status</dt>           <dd>{{.Case.Status}}</dd>
+    <dt>Created</dt>          <dd>{{.Case.CreatedAt.Format "2006-01-02 15:04 UTC"}}</dd>
+  </dl>
+  {{if .Case.Description}}<p class="muted" style="margin-top:16px">{{.Case.Description}}</p>{{end}}
+</section>
+
+<section>
+  <h2>Executive Summary</h2>
+  <p>{{.Summary}}</p>
+  <p>
+    <span class="pill">{{.SeverityCounts.Critical}} critical</span>
+    <span class="pill">{{.SeverityCounts.High}} high</span>
+    <span class="pill">{{.SeverityCounts.Medium}} medium</span>
+    <span class="pill">{{.SeverityCounts.Low}} low</span>
+    <span class="pill">{{.SeverityCounts.Info}} info</span>
+  </p>
+</section>
+
+{{if .Targets}}
+<section>
+  <h2>Scope</h2>
+  <table>
+    <thead><tr><th>Hostname</th><th>IP</th><th>OS</th><th>Status</th></tr></thead>
+    <tbody>
+      {{range .Targets}}
+      <tr><td>{{.Hostname}}</td><td class="mono">{{.IPAddress}}</td>
+          <td>{{.OSType}}</td><td>{{.CollectionStatus}}</td></tr>
+      {{end}}
+    </tbody>
+  </table>
+</section>
+{{end}}
+
+<section>
+  <h2>Findings ({{len .Findings}})</h2>
+  {{if .Findings}}
+  <table id="findings">
+    <thead><tr>
+      <th>Time</th><th>Severity</th><th>Title</th>
+      <th>MITRE</th><th>IOC</th>
+    </tr></thead>
+    <tbody>
+      {{range .Findings}}
+      <tr>
+        <td class="mono">{{.DiscoveredAt.Format "2006-01-02 15:04:05"}}</td>
+        <td><span class="sev {{.Severity}}">{{.Severity}}</span></td>
+        <td>{{.Title}}{{if .Description}}<div class="muted" style="font-size:12px;margin-top:4px">{{.Description}}</div>{{end}}</td>
+        <td class="mono">{{.MITRETechnique}}{{if and .MITRETechnique .MITRETechniqueName}} <span class="muted">{{.MITRETechniqueName}}</span>{{end}}</td>
+        <td class="mono">{{if .IOCType}}{{.IOCType}}: {{.IOCValue}}{{end}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}
+  <p class="muted">No findings recorded yet.</p>
+  {{end}}
+</section>
+
+{{if .MITREMatrix.ByTactic}}
+<section>
+  <h2>MITRE ATT&amp;CK Coverage</h2>
+  <p class="muted">{{.MITREMatrix.Unique}} unique techniques observed across {{.MITREMatrix.Total}} findings.</p>
+  <div class="matrix">
+    {{range .MITREMatrixOrdered}}
+    <div class="col">
+      <h4>{{.Tactic}}</h4>
+      {{range .Items}}
+      <div class="tech"><span class="id">{{.Technique.ID}}</span><span>{{.Technique.Name}} ({{.Count}})</span></div>
+      {{end}}
+    </div>
+    {{end}}
+  </div>
+</section>
+{{end}}
+
+{{if .Evidence}}
+<section>
+  <h2>Evidence Chain</h2>
+  <table>
+    <thead><tr><th>Type</th><th>Path</th><th>SHA256</th><th>Collected</th></tr></thead>
+    <tbody>
+      {{range .Evidence}}
+      <tr>
+        <td>{{.EvidenceType}}</td>
+        <td class="mono">{{.FilePath}}</td>
+        <td class="mono" style="font-size:11px">{{.FileHashSHA256}}</td>
+        <td class="mono">{{.CollectedAt.Format "2006-01-02 15:04"}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+</section>
+{{end}}
+
+{{if .IOCs}}
+<section>
+  <h2>IOC Summary</h2>
+  <table>
+    <thead><tr><th>Type</th><th>Value</th><th>Findings</th></tr></thead>
+    <tbody>
+      {{range .IOCs}}
+      <tr><td>{{.Type}}</td><td class="mono">{{.Value}}</td><td>{{.Count}}</td></tr>
+      {{end}}
+    </tbody>
+  </table>
+</section>
+{{end}}
+
+<footer>
+  Report generated by VanGuard {{.Version}} — RidgeLine Cyber DFIR Toolkit.
+</footer>
+
+</main>
+
+<script>
+(function(){
+  var table = document.getElementById('findings');
+  if (!table) return;
+  var ths = table.querySelectorAll('th');
+  ths.forEach(function(th, idx) {
+    th.addEventListener('click', function() {
+      var rows = Array.from(table.querySelectorAll('tbody tr'));
+      var asc = th.dataset.asc !== 'true';
+      rows.sort(function(a, b) {
+        var av = a.children[idx].innerText.trim().toLowerCase();
+        var bv = b.children[idx].innerText.trim().toLowerCase();
+        if (av < bv) return asc ? -1 : 1;
+        if (av > bv) return asc ? 1 : -1;
+        return 0;
+      });
+      var tbody = table.querySelector('tbody');
+      rows.forEach(function(r) { tbody.appendChild(r); });
+      th.dataset.asc = asc;
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

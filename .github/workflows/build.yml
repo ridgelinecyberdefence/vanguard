@@ -1,0 +1,79 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            binary: vanguard
+            goos: linux
+          - os: windows-latest
+            binary: vanguard.exe
+            goos: windows
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      # MinGW is needed for CGO on Windows runners (go-sqlite3 dependency).
+      - name: Install GCC (Windows)
+        if: matrix.os == 'windows-latest'
+        run: choco install mingw -y
+
+      - name: Resolve build metadata (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        id: meta-linux
+        run: |
+          echo "date=$(date -u +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
+          echo "commit=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve build metadata (Windows)
+        if: matrix.os == 'windows-latest'
+        id: meta-win
+        shell: pwsh
+        run: |
+          "date=$(Get-Date -Format yyyy-MM-dd)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "commit=$($env:GITHUB_SHA.Substring(0,7))" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Build (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        env:
+          CGO_ENABLED: 1
+        run: |
+          go build \
+            -ldflags "-X main.version=ci -X main.buildDate=${{ steps.meta-linux.outputs.date }} -X main.commit=${{ steps.meta-linux.outputs.commit }}" \
+            -o ${{ matrix.binary }} ./cmd/vanguard/
+
+      - name: Build (Windows)
+        if: matrix.os == 'windows-latest'
+        env:
+          CGO_ENABLED: 1
+        shell: pwsh
+        run: |
+          go build `
+            -ldflags "-X main.version=ci -X main.buildDate=${{ steps.meta-win.outputs.date }} -X main.commit=${{ steps.meta-win.outputs.commit }}" `
+            -o ${{ matrix.binary }} ./cmd/vanguard/
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Test
+        run: go test ./...
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vanguard-${{ matrix.goos }}
+          path: ${{ matrix.binary }}
+          if-no-files-found: error

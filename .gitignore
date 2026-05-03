@@ -1,0 +1,68 @@
+# VanGuard binary
+/vanguard
+vanguard.exe
+
+# Runtime output
+output/
+logs/
+cases/
+
+# Velociraptor runtime data
+velociraptor_data/
+
+# Operator-specific config (contains analyst name, org, and optionally a GitHub PAT)
+config/vanguard.yaml
+
+# Generated Velociraptor configs (contain certs)
+config/velociraptor/*.yaml
+config/credentials.enc
+
+# Downloaded tool binaries (users download at runtime)
+bin/windows/*
+bin/linux/*
+!bin/windows/.gitkeep
+!bin/linux/.gitkeep
+
+# Volatility symbols (too large for git)
+lib/volatility3/symbols/**/*.json
+lib/volatility3/symbols/**/*.zip
+
+# Embedded Python (too large for git)
+lib/python-embedded/
+
+# Downloaded rules (users download at runtime)
+rules/sigma/*
+rules/yara/malware/*
+rules/yara/webshells/*
+rules/yara/exploits/*
+rules/hayabusa/*
+!rules/yara/custom/
+!rules/**/.gitkeep
+config/last_update_check
+rules/yara/*
+!rules/yara/custom/
+!rules/yara/.gitkeep
+
+# Claude Code working directories
+vg-*/
+.claude/
+
+# Security audit (contains vulnerability details)
+docs/security-audit-findings.md
+config/targets.yaml
+
+# Go build cache
+*.test
+*.out
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
