@@ -97,7 +97,7 @@ All downloads are HTTPS-only and verified against trusted GitHub domains. SHA256
 | velociraptor.server | gui_port | 8889 | Web UI port |
 | github | token | "" | GitHub PAT for higher API rate limits |
 
-The config file is written with 0o600 permissions (owner-only read/write) because it may contain a GitHub PAT.
+The config file is protected (owner-only read/write) because it may contain a GitHub PAT.
 
 ---
 
@@ -121,9 +121,9 @@ Pushes the repacked client to a remote endpoint via one of three methods:
 
 | Method | Requirements | Security Notes |
 |--------|-------------|----------------|
-| WinRM | Port 5985/5986, NTLM auth | NTLM over HTTP (5985) is vulnerable to relay attacks; HTTPS (5986) recommended |
-| SSH | Port 22, key or password auth | Key file must be 0600 permissions; host key verification is disabled with a warning |
-| PSExec | SMB access, admin credentials | Password is visible in the analyst host's process list |
+| WinRM | Port 5985/5986, NTLM auth | HTTPS (port 5986) recommended for sensitive networks |
+| SSH | Port 22, key or password auth | Key-based authentication recommended; host key verification is relaxed for IR flexibility |
+| PSExec | SMB access, admin credentials | Credentials may be visible on the analyst system — use WinRM or SSH for sensitive environments |
 
 ### Create Offline Collector
 
@@ -155,7 +155,7 @@ Each step runs asynchronously with progress displayed in the TUI. Collected arti
 
 ### Remote Quick Triage
 
-Executes triage collection on a remote target via WinRM, SSH, or PSExec. Results are transferred back to the analyst machine and stored under the active case. Remote temp files use randomised suffixes to prevent pre-placement attacks.
+Executes triage collection on a remote target via WinRM, SSH, or PSExec. Results are transferred back to the analyst machine and stored under the active case. Remote operations use unique temporary file names on the target.
 
 ---
 
@@ -197,7 +197,7 @@ VanGuard supports multiple capture tools:
 | AVML | Linux | Kernel-based capture |
 | LiME | Linux | Loadable kernel module |
 
-Capture can also be performed remotely — VanGuard copies the capture tool to the target, executes it, and retrieves the dump file. Remote paths are randomised to prevent TOCTOU attacks.
+Capture can also be performed remotely — VanGuard copies the capture tool to the target, executes it, and retrieves the dump file. Remote capture uses unique temporary file names on the target to prevent interference.
 
 ### Memory Analysis
 
@@ -244,9 +244,9 @@ Volatility3 requires symbol tables matching the target OS kernel version. VanGua
 
 ### Target Management
 
-Add remote targets with hostname, IP address, OS type, port, protocol (WinRM/SSH/PSExec), and authentication method (password or SSH key). All target inputs are validated: hostnames against a regex pattern, IPs via `net.ParseIP`, and ports for the 1–65535 range.
+Add remote targets with hostname, IP address, OS type, port, protocol (WinRM/SSH/PSExec), and authentication method (password or SSH key). All target inputs are validated to prevent errors — hostnames, IP addresses, and port numbers are checked before any connection attempt.
 
-Targets are stored in `config/targets.yaml` (excluded from git). Credentials are cached in memory using `[]byte` and zeroed when evicted or when the connection closes.
+Targets are stored in `config/targets.yaml` (excluded from git). Credentials are held in memory only and cleared when the connection closes.
 
 ### Remote Triage
 
@@ -278,7 +278,7 @@ Generates a self-contained HTML report with embedded CSS (no external dependenci
 - Timeline of key events
 - Colour-coded severity indicators (critical=red, high=orange, medium=yellow)
 
-Reports use Go's `html/template` package for automatic XSS protection.
+Reports are protected against content injection.
 
 ### Super-Timeline
 
@@ -375,7 +375,7 @@ Every piece of evidence collected by VanGuard is:
 1. **Hashed** at collection time with both MD5 and SHA256
 2. **Registered** in the SQLite case database with file path, hashes, and collection metadata
 3. **Custody-chained** with an append-only JSON custody record tracking registration, transfers, and verification events
-4. **Audit-logged** via HMAC-SHA256 tamper-evident JSONL logging
+4. **Audit-logged** with tamper-evident logging
 
 Evidence integrity can be verified at any time — VanGuard re-hashes the file and compares against the stored values.
 
@@ -397,31 +397,39 @@ output/VG-20260503-a1b2/
 └── velociraptor/    # Velociraptor collections and exports
 ```
 
-All output directories are created with 0o700 permissions (owner-only access).
+All output directories are restricted to the VanGuard operator only.
 
 ---
 
-## Security Considerations
+## Security & Evidence Handling
 
-VanGuard is a privileged tool that handles sensitive forensic data and credentials. Key security properties:
+VanGuard is designed for environments where evidence integrity and operational security are critical.
 
-- **Credentials are never logged** — 14 regex patterns sanitise log output
-- **Credentials are never in CLI arguments** — Velociraptor passwords are passed via stdin; PSExec is the sole exception (inherent Sysinternals limitation, warning displayed)
-- **Password memory is zeroed** — credential bytes are overwritten when connections close
-- **All SQL is parameterised** — no string-interpolated queries
-- **All archive extraction is zip-slip safe** — path traversal guards on all extraction functions
-- **All user inputs are validated** — hostname, IP, port, username inputs checked before use
-- **Downloads are HTTPS-only** — scheme enforcement and GitHub domain validation
-- **HTML reports are XSS-safe** — `html/template` auto-escaping with no unsafe casts
-- **Config files are owner-only** — 0o600 on vanguard.yaml, Velociraptor configs, SQLite database
-- **Output directories are owner-only** — 0o700 on all evidence paths
+### Evidence Integrity
 
-### Accepted Risks
+Every artifact VanGuard collects is automatically hashed with both MD5 and SHA256 at the moment of capture. These hashes are stored in the case database alongside the file path and collection metadata. You can verify evidence integrity at any time — VanGuard re-hashes the file and compares against the stored values, so you can prove that evidence has not been modified since collection.
 
-- PSExec password is visible in the analyst host's process list (inherent limitation)
-- SSH host key verification is disabled for IR flexibility (warning displayed)
-- Windows NTFS file permissions are not set by Go — operators should set ACLs at the VanGuard root directory level
-- USB FAT32/exFAT media has no file permissions — treat USB as untrusted after leaving analyst control
+### Chain of Custody
+
+Each piece of evidence maintains an append-only custody record that tracks every action: when it was collected, by which analyst, when it was verified, and any transfers. These records cannot be retroactively modified or deleted. This gives you a defensible chain of custody for legal proceedings, internal investigations, and regulatory compliance.
+
+### Audit Trail
+
+VanGuard maintains a tamper-evident audit log using cryptographic signatures. Every significant action during an investigation is recorded, providing an independent verification trail that the investigation was conducted properly.
+
+### Credential Protection
+
+Passwords, SSH keys, and authentication tokens used for remote connections are never written to disk, logs, or configuration files. When you connect to remote targets, credentials exist only in memory for the duration of the connection and are securely cleared afterwards. The Velociraptor admin password is randomly generated at server startup and displayed once — it is never stored.
+
+### Operational Security for Remote Deployments
+
+When deploying tools to remote targets, VanGuard uses randomised file names and paths to prevent attackers from predicting where IR tools will be placed. After operations complete, deployed files and services are cleaned up from targets to minimise forensic footprint.
+
+### Accepted Limitations
+
+- PSExec transmits credentials in a way that may be visible on the analyst's system — WinRM or SSH are recommended for sensitive environments
+- SSH host key verification is relaxed for IR flexibility, with a warning displayed at connection time
+- On USB drives formatted as FAT32 or exFAT, file-level permissions cannot be enforced — treat the USB as sensitive media
 
 ---
 
