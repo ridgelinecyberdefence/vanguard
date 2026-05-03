@@ -331,7 +331,7 @@ func probeTarget(store *remote.Store, t *remote.RemoteTarget) map[string]interfa
 	if host == "" {
 		host = t.Hostname
 	}
-	addr := fmt.Sprintf("%s:%d", host, t.Port)
+	addr := net.JoinHostPort(host, fmt.Sprintf("%d", t.Port))
 	started := time.Now()
 	conn, dialErr := net.DialTimeout("tcp", addr, 5*time.Second)
 	elapsed := time.Since(started)
