@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/ridgelinecyberdefence/vanguard/security/advisories/new
+    about: Report security vulnerabilities privately, not as public issues. See SECURITY.md.
+  - name: Question or usage help
+    url: https://github.com/ridgelinecyberdefence/vanguard/discussions
+    about: Ask how to use VanGuard or discuss DFIR workflows.

@@ -4,6 +4,18 @@ All notable changes to VanGuard will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.0.1] - 2026-07-06
+
+### Added
+- SECURITY.md with a private vulnerability-reporting policy (security@ridgelinecyber.com
+  and GitHub private advisories)
+- Issue templates for bug reports and feature requests, with security reports routed to
+  private disclosure rather than public issues
+
+### Changed
+- Documentation and repository-hygiene updates; no changes to the VanGuard binary or its
+  behaviour
+
 ## [1.0.0] - 2026-05-03
 
 ### Added
