@@ -67,8 +67,8 @@ Cross-platform (Windows/Linux) enterprise DFIR toolkit for connected, isolated, 
 - All errors wrapped with context: fmt.Errorf("operation: %w", err)
 - Structured error handling: ToolResult struct for all external tool calls.
 - No global state. Pass config/context explicitly.
-- ALL exec.Command calls must run in tea.Cmd goroutines — never block the TUI.
-- View() must be a pure render function — no I/O, no filesystem access, no computation.
+- ALL exec.Command calls must run in tea.Cmd goroutines, never block the TUI.
+- View() must be a pure render function. No I/O, no filesystem access, no computation.
 - Use strings.Builder for string assembly in View().
 
 ### PowerShell
@@ -93,17 +93,17 @@ Cross-platform (Windows/Linux) enterprise DFIR toolkit for connected, isolated, 
 - Brand name: RidgeLine Cyber (not RidgeLine).
 
 ## Key Dependencies
-- github.com/charmbracelet/bubbletea — TUI framework
-- github.com/charmbracelet/lipgloss — TUI styling
-- github.com/charmbracelet/bubbles — TUI components (textinput, table, spinner)
-- gopkg.in/yaml.v3 — YAML config
-- github.com/mattn/go-sqlite3 — SQLite case DB (CGO required, build with CGO_ENABLED=1)
-- golang.org/x/crypto/ssh — SSH remote ops
-- github.com/masterzen/winrm — WinRM remote ops
+- github.com/charmbracelet/bubbletea, TUI framework
+- github.com/charmbracelet/lipgloss, TUI styling
+- github.com/charmbracelet/bubbles. TUI components (textinput, table, spinner)
+- gopkg.in/yaml.v3, YAML config
+- github.com/mattn/go-sqlite3. SQLite case DB (CGO required, build with CGO_ENABLED=1)
+- golang.org/x/crypto/ssh, SSH remote ops
+- github.com/masterzen/winrm, WinRM remote ops
 
 ## Build Commands
 
-    # Windows (PowerShell) — CGO required for SQLite
+    # Windows (PowerShell): CGO required for SQLite
     $env:CGO_ENABLED=1; go build -o vanguard.exe ./cmd/vanguard/
 
     # Linux
@@ -127,19 +127,19 @@ About help page, and HTML report headers. CI builds inject the same flags
 automatically (see `.github/workflows/`).
 
 ## Design Principles
-1. Air-gapped first — design for offline, add online as enhancement.
-2. Self-contained — every dependency bundled, works from USB.
-3. Cross-platform parity — Windows and Linux equivalents where applicable.
+1. Air-gapped first. Design for offline, add online as enhancement.
+2. Self-contained. Every dependency bundled, works from USB.
+3. Cross-platform parity. Windows and Linux equivalents where applicable.
 4. Velociraptor is the PRIMARY capability.
-5. Use cases drive value — 28 pre-built IR workflows.
-6. Professional output — HTML reports with sorting, filtering, MITRE ATT&CK mapping.
+5. Use cases drive value, 28 pre-built IR workflows.
+6. Professional output. HTML reports with sorting, filtering, MITRE ATT&CK mapping.
 
 ## TUI Design
 - Sidebar + content pane layout (inspired by Cyber Triage)
 - Dark blue professional theme matching RidgeLine Cyber website
 - Header bar with branding, status bar with platform/host/elevation/case/version
 - Breadcrumb navigation in content pane
-- All operations run async via tea.Cmd — TUI never blocks
+- All operations run async via tea.Cmd, TUI never blocks
 - Platform-aware menus (Windows/Linux show different options)
 
 ## Tool Registry (internal/tools/manager.go)
@@ -149,7 +149,7 @@ Manual install required: KAPE, EZ Tools, DumpIt, Volatility3, LiME, dc3dd, plaso
 
 ## Completed Implementation
 
-### Phase 1 — Foundation (COMPLETE)
+### Phase 1: Foundation (COMPLETE)
 - Go project scaffold with full directory structure
 - YAML config loader with defaults and validation (internal/config/config.go)
 - Structured logger with file+stderr output and 10MB rotation (internal/logging/logger.go)
@@ -160,7 +160,7 @@ Manual install required: KAPE, EZ Tools, DumpIt, Volatility3, LiME, dc3dd, plaso
 - Hostname and investigator display in UI
 - Status bar with platform, host, elevation, case, version
 
-### Phase 2 — Core Operations (COMPLETE)
+### Phase 2: Core Operations (COMPLETE)
 - Tool registry with 15+ tools across collection/analysis/detection/rules categories (internal/tools/manager.go)
 - GitHub releases API integration for automated tool downloads
 - Archive extraction (ZIP, tar.gz) with flexible binary name matching
@@ -251,7 +251,7 @@ Static analysis audit covering 10 categories, 80 individual checks. Results: 49 
 - Velociraptor `--merge` JSON: Replaced `fmt.Sprintf` with `encoding/json.Marshal` (`velociraptor/manager.go`)
 - HTTPS enforcement: `downloadFile` rejects non-`https://` URLs (`tools/manager.go`)
 - GitHub domain validation: `validateGitHubDownloadURL` gates downloads to `github.com`, `objects.githubusercontent.com`, `releases.githubusercontent.com` only (`tools/manager.go`)
-- WinRM HTTP warning: Log warning when connecting over HTTP (port != 5986) — NTLM relay risk (`network/winrm.go`)
+- WinRM HTTP warning: Log warning when connecting over HTTP (port != 5986). NTLM relay risk (`network/winrm.go`)
 - Bind address validation: `net.ParseIP` check in `Validate()` for `velociraptor.server.bind_address` (`config/config.go`)
 - PSExec cleanup wiring: `SkipCleanup` field on Engine, wired from `config.Network.PSExec.Cleanup` (`remote/ops.go`)
 
@@ -273,7 +273,7 @@ Static analysis audit covering 10 categories, 80 individual checks. Results: 49 
 
 ### Accepted Risks (not fixable in code)
 
-- PSExec `-p PASSWORD` visible in analyst host process list — inherent Sysinternals limitation; WinRM/SSH recommended for sensitive credentials
+- PSExec `-p PASSWORD` visible in analyst host process list. Inherent Sysinternals limitation; WinRM/SSH recommended for sensitive credentials
 - Windows file permissions: Go `os.WriteFile` / `os.MkdirAll` modes have no effect on NTFS ACLs; operators must set NTFS permissions at VanGuard root directory level
 - USB FAT32/exFAT: No file permissions on portable media; treat USB as untrusted after leaving analyst control
 - `InsecureIgnoreHostKey` for SSH: Deliberate for IR flexibility; documented with warning
@@ -287,16 +287,16 @@ Static analysis audit covering 10 categories, 80 individual checks. Results: 49 
 
 ### Security Design Principles (established by audit)
 
-1. **Credentials never logged** — `sanitizeLogMessage` with 14 regex patterns covers all credential formats
-2. **Credentials never in argv** — Velociraptor passwords via stdin; PSExec is the only exception (inherent limitation)
-3. **All SQL parameterised** — zero `fmt.Sprintf` SQL construction in the codebase
-4. **All archive extraction zip-slip safe** — 7 extraction functions, all guarded with separator-inclusive prefix checks
-5. **All TUI inputs validated at commit** — hostname regex, `net.ParseIP`, port range, username regex, OS/protocol/auth enums
-6. **Evidence hashed on registration** — dual MD5+SHA256; integrity verification re-hashes and compares
-7. **Output reports XSS-safe** — `html/template` (auto-escaping), no `template.HTML()` casts
-8. **Downloads HTTPS-only** — scheme enforcement + GitHub domain validation
-9. **Output directories owner-only** — `0o700` on all evidence/output paths
-10. **Config files owner-only** — `0o600` on `vanguard.yaml`, Velociraptor configs, SQLite DB
+1. **Credentials never logged**: `sanitizeLogMessage` with 14 regex patterns covers all credential formats
+2. **Credentials never in argv**: Velociraptor passwords via stdin; PSExec is the only exception (inherent limitation)
+3. **All SQL parameterised**: zero `fmt.Sprintf` SQL construction in the codebase
+4. **All archive extraction zip-slip safe**: 7 extraction functions, all guarded with separator-inclusive prefix checks
+5. **All TUI inputs validated at commit**: hostname regex, `net.ParseIP`, port range, username regex, OS/protocol/auth enums
+6. **Evidence hashed on registration**: dual MD5+SHA256; integrity verification re-hashes and compares
+7. **Output reports XSS-safe**: `html/template` (auto-escaping), no `template.HTML()` casts
+8. **Downloads HTTPS-only**: scheme enforcement + GitHub domain validation
+9. **Output directories owner-only**: `0o700` on all evidence/output paths
+10. **Config files owner-only**: `0o600` on `vanguard.yaml`, Velociraptor configs, SQLite DB
 
 ### Verification Needed (manual testing)
 
@@ -305,7 +305,7 @@ Static analysis audit covering 10 categories, 80 individual checks. Results: 49 
 
 ## Remaining Implementation
 
-### Phase 3 — Memory Forensics [5]
+### Phase 3: Memory Forensics [5]
 - Memory capture (DumpIt, WinPmem, AVML, LiME, Velociraptor agent, remote capture)
 - Volatility3 integration (auto-profile, process/network/malware/registry/timeline analysis)
 - Symbol management

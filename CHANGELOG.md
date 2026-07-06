@@ -36,7 +36,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Security
 - 26 security audit findings addressed (3 critical, 4 high, 7 medium, 11 low, 1 informational)
-- All SQL queries parameterised — zero string-interpolated SQL
+- All SQL queries parameterised, zero string-interpolated SQL
 - All archive extraction zip-slip safe with separator-inclusive prefix checks
 - All TUI inputs validated: hostname regex, IP validation, port range, username regex
 - Credentials never logged (14 regex sanitisation patterns)

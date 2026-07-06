@@ -2,7 +2,7 @@
 
 ## Overview
 
-VanGuard is an enterprise DFIR (Digital Forensics and Incident Response) toolkit that runs as a single binary on Windows and Linux. It provides a unified interface for Velociraptor-based IR operations, triage collection, threat hunting, memory forensics, disk artifact analysis, and remote operations — all from a self-contained, portable deployment.
+VanGuard is an enterprise DFIR (Digital Forensics and Incident Response) toolkit that runs as a single binary on Windows and Linux. It provides a unified interface for Velociraptor-based IR operations, triage collection, threat hunting, memory forensics, disk artifact analysis, and remote operations. All from a self-contained, portable deployment.
 
 VanGuard operates in two interface modes: a keyboard-driven TUI for terminal and SSH sessions, and a web UI accessible via browser.
 
@@ -15,7 +15,7 @@ VanGuard detects privilege level at startup and warns if running without elevati
 ## First Run
 
 1. Download the binary from [GitHub Releases](https://github.com/ridgelinecyberdefence/vanguard/releases) or build from source
-2. Place it in any directory where VanGuard can create its subdirectories — a local folder, a USB drive, or a network share
+2. Place it in any directory where VanGuard can create its subdirectories. A local folder, a USB drive, or a network share
 3. Launch: `vanguard.exe` (Windows) or `sudo ./vanguard` (Linux)
 4. On first run, VanGuard creates the directory structure and a default `config/vanguard.yaml`
 5. Navigate to **Configuration** to set your analyst name, organisation, and download tools
@@ -107,7 +107,7 @@ Velociraptor is VanGuard's primary IR capability. VanGuard manages the full Velo
 
 ### Initialize Server
 
-Starts a local Velociraptor server on the analyst's machine. VanGuard handles certificate generation, config creation, server startup, health checks, and admin user creation. The admin password is generated randomly using `crypto/rand` and displayed once — it is never written to logs or config files.
+Starts a local Velociraptor server on the analyst's machine. VanGuard handles certificate generation, config creation, server startup, health checks, and admin user creation. The admin password is generated randomly using `crypto/rand` and displayed once. It is never written to logs or config files.
 
 The server binds to the configured address (default `0.0.0.0`) on the frontend port (8000) and GUI port (8889). A warning is displayed if binding to `0.0.0.0` as this exposes the server to all network interfaces.
 
@@ -123,11 +123,11 @@ Pushes the repacked client to a remote endpoint via one of three methods:
 |--------|-------------|----------------|
 | WinRM | Port 5985/5986, NTLM auth | HTTPS (port 5986) recommended for sensitive networks |
 | SSH | Port 22, key or password auth | Key-based authentication recommended; host key verification is relaxed for IR flexibility |
-| PSExec | SMB access, admin credentials | Credentials may be visible on the analyst system — use WinRM or SSH for sensitive environments |
+| PSExec | SMB access, admin credentials | Credentials may be visible on the analyst system. Use WinRM or SSH for sensitive environments |
 
 ### Create Offline Collector
 
-Generates a self-contained collector executable that can be run on a target without network connectivity. The collector gathers artifacts and produces a ZIP file that can be transferred back to the analyst — via USB, network share, or other means — and imported into VanGuard.
+Generates a self-contained collector executable that can be run on a target without network connectivity. The collector gathers artifacts and produces a ZIP file that can be transferred back to the analyst. Via USB, network share, or other means, and imported into VanGuard.
 
 ### Import Offline Collection
 
@@ -145,7 +145,7 @@ Controls the Velociraptor server lifecycle. Status shows whether the server is r
 
 ## Quick Triage (Option 4)
 
-Quick Triage performs rapid artifact collection using native OS commands — no external tools required. This is the fastest way to gather baseline forensic data from a system.
+Quick Triage performs rapid artifact collection using native OS commands. No external tools required. This is the fastest way to gather baseline forensic data from a system.
 
 ### Local Quick Triage
 
@@ -197,7 +197,7 @@ VanGuard supports multiple capture tools:
 | AVML | Linux | Kernel-based capture |
 | LiME | Linux | Loadable kernel module |
 
-Capture can also be performed remotely — VanGuard copies the capture tool to the target, executes it, and retrieves the dump file. Remote capture uses unique temporary file names on the target to prevent interference.
+Capture can also be performed remotely. VanGuard copies the capture tool to the target, executes it, and retrieves the dump file. Remote capture uses unique temporary file names on the target to prevent interference.
 
 ### Memory Analysis
 
@@ -236,7 +236,7 @@ Volatility3 requires symbol tables matching the target OS kernel version. VanGua
 
 **UAC (Unix Artifacts Collector):** Profile-based Linux artifact collection covering logs, user data, system configuration, and process information.
 
-**Native Collection:** VanGuard collects Linux artifacts directly using shell commands — `/var/log/` contents, user home directories, cron configurations, systemd unit files, SSH configuration, and package manifests.
+**Native Collection:** VanGuard collects Linux artifacts directly using shell commands. `/var/log/` contents, user home directories, cron configurations, systemd unit files, SSH configuration, and package manifests.
 
 ---
 
@@ -244,7 +244,7 @@ Volatility3 requires symbol tables matching the target OS kernel version. VanGua
 
 ### Target Management
 
-Add remote targets with hostname, IP address, OS type, port, protocol (WinRM/SSH/PSExec), and authentication method (password or SSH key). All target inputs are validated to prevent errors — hostnames, IP addresses, and port numbers are checked before any connection attempt.
+Add remote targets with hostname, IP address, OS type, port, protocol (WinRM/SSH/PSExec), and authentication method (password or SSH key). All target inputs are validated to prevent errors. Hostnames, IP addresses, and port numbers are checked before any connection attempt.
 
 Targets are stored in `config/targets.yaml` (excluded from git). Credentials are held in memory only and cleared when the connection closes.
 
@@ -270,7 +270,7 @@ After remote operations, VanGuard removes deployed files, temp directories, and 
 
 ### HTML Incident Report
 
-Generates a self-contained HTML report with embedded CSS (no external dependencies — works in air-gapped environments). The report includes:
+Generates a self-contained HTML report with embedded CSS (no external dependencies. Works in air-gapped environments). The report includes:
 
 - Case summary with analyst name, dates, and classification
 - Evidence inventory with file hashes
@@ -377,7 +377,7 @@ Every piece of evidence collected by VanGuard is:
 3. **Custody-chained** with an append-only JSON custody record tracking registration, transfers, and verification events
 4. **Audit-logged** with tamper-evident logging
 
-Evidence integrity can be verified at any time — VanGuard re-hashes the file and compares against the stored values.
+Evidence integrity can be verified at any time. VanGuard re-hashes the file and compares against the stored values.
 
 ---
 
@@ -407,7 +407,7 @@ VanGuard is designed for environments where evidence integrity and operational s
 
 ### Evidence Integrity
 
-Every artifact VanGuard collects is automatically hashed with both MD5 and SHA256 at the moment of capture. These hashes are stored in the case database alongside the file path and collection metadata. You can verify evidence integrity at any time — VanGuard re-hashes the file and compares against the stored values, so you can prove that evidence has not been modified since collection.
+Every artifact VanGuard collects is automatically hashed with both MD5 and SHA256 at the moment of capture. These hashes are stored in the case database alongside the file path and collection metadata. You can verify evidence integrity at any time. VanGuard re-hashes the file and compares against the stored values, so you can prove that evidence has not been modified since collection.
 
 ### Chain of Custody
 
@@ -419,7 +419,7 @@ VanGuard maintains a tamper-evident audit log using cryptographic signatures. Ev
 
 ### Credential Protection
 
-Passwords, SSH keys, and authentication tokens used for remote connections are never written to disk, logs, or configuration files. When you connect to remote targets, credentials exist only in memory for the duration of the connection and are securely cleared afterwards. The Velociraptor admin password is randomly generated at server startup and displayed once — it is never stored.
+Passwords, SSH keys, and authentication tokens used for remote connections are never written to disk, logs, or configuration files. When you connect to remote targets, credentials exist only in memory for the duration of the connection and are securely cleared afterwards. The Velociraptor admin password is randomly generated at server startup and displayed once, it is never stored.
 
 ### Operational Security for Remote Deployments
 
@@ -427,9 +427,9 @@ When deploying tools to remote targets, VanGuard uses randomised file names and 
 
 ### Accepted Limitations
 
-- PSExec transmits credentials in a way that may be visible on the analyst's system — WinRM or SSH are recommended for sensitive environments
+- PSExec transmits credentials in a way that may be visible on the analyst's system. WinRM or SSH are recommended for sensitive environments
 - SSH host key verification is relaxed for IR flexibility, with a warning displayed at connection time
-- On USB drives formatted as FAT32 or exFAT, file-level permissions cannot be enforced — treat the USB as sensitive media
+- On USB drives formatted as FAT32 or exFAT, file-level permissions cannot be enforced. Treat the USB as sensitive media
 
 ---
 
@@ -441,11 +441,11 @@ Navigate to Configuration → Tool Management and download the required tool. Va
 
 ### WinRM connection failed
 
-Ensure WinRM is enabled on the target: `Enable-PSRemoting -Force` (as Administrator). VanGuard uses NTLM authentication — Basic auth is not required. For HTTPS, use port 5986.
+Ensure WinRM is enabled on the target: `Enable-PSRemoting -Force` (as Administrator). VanGuard uses NTLM authentication. Basic auth is not required. For HTTPS, use port 5986.
 
 ### SSH key rejected
 
-VanGuard requires SSH key files to have 0600 permissions (owner-only). Fix with: `chmod 600 /path/to/key`. Passphrase-protected keys are not currently supported — use an unencrypted key or ssh-agent.
+VanGuard requires SSH key files to have 0600 permissions (owner-only). Fix with: `chmod 600 /path/to/key`. Passphrase-protected keys are not currently supported. Use an unencrypted key or ssh-agent.
 
 ### Memory capture fails
 

@@ -4,7 +4,7 @@
 
 1. Launch VanGuard (as Administrator/root)
 2. Navigate to **Configuration** (option 8)
-3. Create a new case — all evidence will be stored under `output/{case_id}/`
+3. Create a new case. All evidence will be stored under `output/{case_id}/`
 4. Set your analyst name and organisation
 5. Download required tools via **Tool Management**
 
